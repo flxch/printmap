@@ -33,7 +33,7 @@ PROVIDERS = {
         "url": "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
         "user_agent": "PrivatesKartenProjekt/1.0 (kontakt@beispiel.at)",
         "is_y_inverted": False,
-        "copyright": "Map Data: © OpenStreetMap Contributors, SRTM\nMap Representation: © OpenTopoMap (CC-BY-SA)"
+        "copyright": "Map Data: © OpenStreetMap Contributors, SRTM\nMap Style: © OpenTopoMap (CC-BY-SA)"
     },
     "satellite": {
         "site": "https://server.arcgisonline.com",
