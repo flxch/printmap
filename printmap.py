@@ -11,6 +11,12 @@ from PIL import Image, ImageDraw, ImageFont
 import img2pdf
 
 
+# Disable Pillow's decompression bomb limit for large stitched maps.
+# The default value is roughly 89.4 million. This can be too small for
+# detailed large maps. Image.MAX_IMAGE_PIXELS = 200_000_000 might suffice
+# for most cases but disable it here completely.
+Image.MAX_IMAGE_PIXELS = None
+
 # Paper formats (width, height) in millimeters for portrait orientation.
 DIN_FORMATS_MM = {
     "A0": (841, 1189),
