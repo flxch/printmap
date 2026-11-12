@@ -17,8 +17,8 @@ TODO: Explain command-line flags.
 ```
 ./printmap.py --lat 47.05412 --lon 15.44316 \
               --scale 10000 --zoom 16 --format a0 \
-			  --label "Graz, Austria" \
-			  --output examples/graz_16_10000_landscape.pdf
+              --label "Graz, Austria" \
+              --output examples/graz_16_10000_landscape.pdf
 ```
   - View the map in a browser:
     https://opentopomap.org/vector/#16/47.05412/15.44316
@@ -29,8 +29,8 @@ TODO: Explain command-line flags.
 ```
 ./printmap.py --lat 40.06301 --lon 19.79264 \
               --scale 5000 --zoom 16 --format a0 \
-			  --label "Palermo Beach, Albania" \
-		 	  --output examples/palermobeach_16_5000_landscape.pdf
+              --label "Palermo Beach, Albania" \
+              --output examples/palermobeach_16_5000_landscape.pdf
 ```
   - View the map in a browser: 
     https://opentopomap.org/vector/#16/40.06301/19.79264
@@ -38,8 +38,10 @@ TODO: Explain command-line flags.
 
 ## Notes
 
-* For license issues of the maps and photos, see https://opentopomap.org/about and
-  https://doc.esri.com/en/arcgis-online/latest/reference/static-maps.html#:~:text=The%20following%20attribution%20is%20recommended%20as%20a,limited%20to%2C%20commercial%20monetization%20and%20direct%20resale. respecticvely. 
+* For license issues of the maps and photos, see https://opentopomap.org/about
+  and
+  https://doc.esri.com/en/arcgis-online/latest/reference/static-maps.html
+  respecticvely. 
 * On the web pages https://opentopomap.org/ and
   https://opentopomap.org/vector (vector graphics) one can look at the
   topographical maps prior to downloading the data and creating the
