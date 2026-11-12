@@ -1,4 +1,4 @@
-# Make Map
+# Print Map
 
 Creation of true-to-scale topographic maps or satellite photos from
 web tiles.  The maps or photos can either be output as PDF, JPG, or
@@ -15,30 +15,32 @@ TODO: Explain command-line flags.
   Topographic city map with scale 1:10000 on DIN A0 paper in
   landscape:
 ```
-./makemap.py --lat 47.05412 --lon 15.44316 \
-             --scale 10000 --zoom 16 --format a0 \
-			 --output graz_16_10000-landscape.pdf
+./printmap.py --lat 47.05412 --lon 15.44316 \
+              --scale 10000 --zoom 16 --format a0 \
+			  --label "Graz, Austria" \
+			  --output examples/graz_16_10000_landscape.pdf
 ```
   - View the map in a browser:
-    https://opentopomap.org/vector/#12/47.04875/15.43575
-  - Create a satellite photo of the same area: `./makemap.py --provider satellite --lat 47.05412 --lon 15.44316 --scale 10000 --zoom 16 --format a0 --output sat_graz_16_10000-landscape.pdf`
+    https://opentopomap.org/vector/#16/47.05412/15.44316
+  - Create a satellite photo of the same area: `./printmap.py --provider satellite --lat 47.05412 --lon 15.44316 --scale 10000 --zoom 16 --format a0 --label "Graz, Austria" --output examples/graz_16_10000_landscape_satellite.pdf`
 
 * Palermo Beach, Albania.
   Topographic map with scale 1:5000 on DIN A0 paper in landscape:
 ```
-./makemap.py --lat 40.06301 --lon 19.79264 \
-             --scale 5000 --zoom 16 --format a0 
-			 --output palermobeach_16_5000-landscape.pdf
+./printmap.py --lat 40.06301 --lon 19.79264 \
+              --scale 5000 --zoom 16 --format a0 \
+			  --label "Palermo Beach, Albania" \
+		 	  --output examples/palermobeach_16_5000_landscape.pdf
 ```
   - View the map in a browser: 
-    https://opentopomap.org/vector/#14/40.06301/19.79264
-  - Create a satellite photo of the same area: `./makemap.py --provider satellite --lat 40.06301 --lon 19.79264 --scale 5000 --zoom 16 --format a0 --output sat_palermobeach_16_5000-landscape.pdf`
+    https://opentopomap.org/vector/#16/40.06301/19.79264
+  - Create a satellite photo of the same area: `./printmap.py --provider satellite --lat 40.06301 --lon 19.79264 --scale 5000 --zoom 16 --format a0 --label "Palermo Beach, Albania" --output examples/palermobeach_16_5000_landscape_satellite.pdf`
 
 ## Notes
 
-* For license issues, see https://opentopomap.org/about and
-  https://doc.esri.com/en/arcgis-online/latest/reference/static-maps.html#:~:text=The%20following%20attribution%20is%20recommended%20as%20a,limited%20to%2C%20commercial%20monetization%20and%20direct%20resale. 
-* On web pages https://opentopomap.org/ and
+* For license issues of the maps and photos, see https://opentopomap.org/about and
+  https://doc.esri.com/en/arcgis-online/latest/reference/static-maps.html#:~:text=The%20following%20attribution%20is%20recommended%20as%20a,limited%20to%2C%20commercial%20monetization%20and%20direct%20resale. respecticvely. 
+* On the web pages https://opentopomap.org/ and
   https://opentopomap.org/vector (vector graphics) one can look at the
   topographical maps prior to downloading the data and creating the
   PDF.  One can also read from those web pages the aptitude and
@@ -58,8 +60,8 @@ TODO: Explain command-line flags.
 
 # Map Legend
 
-TODO: Provide linksto the pictures depicting and explaining the
-symbols in a topographic map.
+TODO: Provide links to the pictures depicting and explaining the
+symbols in a topographic map.  See legend subdirectory.
 
 # Todos
 
