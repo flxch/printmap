@@ -9,7 +9,7 @@ import requests
 import mercantile
 from PIL import Image, ImageDraw, ImageFont
 import img2pdf
-
+from tqdm import tqdm
 
 # Disable Pillow's decompression bomb limit for large stitched maps.
 # The default value is roughly 89.4 million. This can be too small for
@@ -43,7 +43,8 @@ PROVIDERS = {
         "copyright": "Map image is the intellectual property of Esri and is used herein under license.\n© 2026 Esri and its licensors. All rights reserved."
     }
 }
-    
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Create true-to-scale topographic maps or satellite photos from web tiles."
@@ -71,7 +72,7 @@ def parse_args():
         "--scale",
         type=int,
         default=25000,
-        help="scale, e.g. 5000 for 1:5,000 (default: 25000)",
+        help="scale, e.g. 5000 for 1:5000 (default: 25000)",
     )
     parser.add_argument(
         "--format",
@@ -104,7 +105,7 @@ def parse_args():
         "--label",
         type=str,
         default=None,
-        help="Custom text for the bottom-left text box (default: auto-generates scale & coordinates)",
+        help="Custom text for the bottom-left text box (default: no text box)",
     )
     parser.add_argument(
         "-o",
@@ -170,8 +171,9 @@ def main():
     provider_info = PROVIDERS[args.provider]
     headers = {"User-Agent": provider_info["user_agent"]}
 
-    for idx, t in enumerate(tiles, 1):
-        # Format URL template depending on the tile provider's coordinate layout schema
+    for idx, t in enumerate(tqdm(tiles, desc="Downloading tiles"), 1):
+        # Format URL template depending on the tile provider's coordinate
+        # layout schema
         url = provider_info["url"].format(z=t.z, x=t.x, y=t.y)
         
         response = requests.get(url, headers=headers)
@@ -182,9 +184,8 @@ def main():
             canvas.paste(tile_img, (x_pos, y_pos))
         else:
             print(f"Error at tile {t.x}/{t.y}: HTTP {response.status_code}")
-
-        if idx % 20 == 0:
-            print(f"Progress: {idx}/{len(tiles)} tiles downloaded ...")
+            
+        # Manual progress print block removed; tqdm handles it natively!
         time.sleep(0.1)
 
     # 4. Crop map at borders.

@@ -3,11 +3,11 @@
 Creation of true-to-scale topographic maps or satellite photos from
 web tiles.  The maps or photos can either be output as PDF, JPG, or
 PNG.  For viewing the topographic maps online in a browser, visit the
-site https://opentopomap.org
+web page https://opentopomap.org
 
 ## Usage
 
-TODO: Explain command-line flags.
+TODO: Explain the command-line flags.
 
 ## Examples
 
@@ -38,10 +38,12 @@ TODO: Explain command-line flags.
 
 ## Notes
 
-* For license issues of the maps and photos, see https://opentopomap.org/about
-  and
+* For license issues of the tiles, which are downloaded from the
+  internet, see https://opentopomap.org/about and
   https://doc.esri.com/en/arcgis-online/latest/reference/static-maps.html
-  respecticvely. 
+  respectively.  Note that with the --label flag, a small box on the
+  left bottom with copyright statement can be added to the output
+  file.
 * On the web pages https://opentopomap.org/ and
   https://opentopomap.org/vector (vector graphics) one can look at the
   topographical maps prior to downloading the data and creating the
@@ -51,7 +53,7 @@ TODO: Explain command-line flags.
   downloaded.  It is also slower in a web browser because the it must
   be rendered.
 * The following Python libraries must be installed: `mercantile`,
-  `img2pdf`, ...  Use `pip install ...`.
+  `img2pdf`, `tqdm`, ...  Use `pip install ...`.
 * A higher zoom factor provides more details. More tiles must be
   downloaded from the map server.
 * Use the map maker sensibly and do not create unnecessary/too much
@@ -69,8 +71,11 @@ symbols in a topographic map.  See legend subdirectory.
 
 * Improve error handling.
 * Check command-line arguments.
+* The flags --lat and --lon should not have defaults.  They should be
+  mandadory.
 * Set output file format depending on the suffix of the output file.
-* Add quiet flag.
-* Progress status bar for download.
-* ...
+  The output-format flag overwrites this.
+* Add quiet flag for no output on stdout.
+* Errors should be printed on stderr.
+* Restructure code: not a single big function.
 
