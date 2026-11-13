@@ -60,14 +60,14 @@ def parse_args():
     parser.add_argument(
         "--lat",
         type=float,
-        default=47.073093,
-        help="latitude of paper center (default: 47.073093 for Graz, Austria)",
+        required=True,
+        help="latitude of map at paper center (required)",
     )
     parser.add_argument(
         "--lon",
         type=float,
-        default=15.443709,
-        help="longitude of the paper center (default: 15.443709 for Graz Austria)",
+        required=True,
+        help="longitude of map at the paper center (required)",
     )
     parser.add_argument(
         "--scale",
