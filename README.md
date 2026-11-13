@@ -72,7 +72,7 @@ symbols in a topographic map.  See legend subdirectory.
 * Improve error handling.
 * Check command-line arguments.
 * The flags --lat and --lon should not have defaults.  They should be
-  mandadory.
+  mandatory input parameters.
 * Set output file format depending on the suffix of the output file.
   The output-format flag overwrites this.
 * Add quiet flag for no output on stdout.

@@ -11,6 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 import img2pdf
 from tqdm import tqdm
 
+
 # Disable Pillow's decompression bomb limit for large stitched maps.
 # The default value is roughly 89.4 million. This can be too small for
 # detailed large maps. Image.MAX_IMAGE_PIXELS = 200_000_000 might suffice
@@ -120,7 +121,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    # Determine default output extension if not specified
+    # Determine default output extension if not specified.
     ext = args.output_format
     output_file = args.output or f"map_{args.provider}_{args.format}_{args.scale}.{ext}"
 
@@ -147,6 +148,7 @@ def main():
     west, south = mercantile.lnglat(min_mx, min_my)
     east, north = mercantile.lnglat(max_mx, max_my)
 
+    # Print some information about the output.
     print(f"Provider: {args.provider}")
     print(f"Center: {args.lat} (latitude), {args.lon} (longitude)")
     print(f"Area: {real_width_m/1000:.2f} km x {real_height_m/1000:.2f} km")    
@@ -156,8 +158,6 @@ def main():
     # 3. Download tiles and put them together.
     tiles = list(mercantile.tiles(west, south, east, north, zooms=args.zoom))
     print(f"Total number of tiles for zoom {args.zoom}: {len(tiles)}")
-    if len(tiles) > 400:
-        print("Warning: It will take some time to download all tiles.")
 
     min_tx = min(t.x for t in tiles)
     max_tx = max(t.x for t in tiles)
@@ -184,8 +184,8 @@ def main():
             canvas.paste(tile_img, (x_pos, y_pos))
         else:
             print(f"Error at tile {t.x}/{t.y}: HTTP {response.status_code}")
+            # Will be an empty tile in the picture.
             
-        # Manual progress print block removed; tqdm handles it natively!
         time.sleep(0.1)
 
     # 4. Crop map at borders.
@@ -207,15 +207,15 @@ def main():
 
     cropped_map = canvas.crop((crop_left, crop_top, crop_right, crop_bottom))
 
-    # 5. Add text nox at bottom-left
+    # 5. Add text box at bottom-left.
     draw = ImageDraw.Draw(cropped_map)
     try:
-        # Scale font size slightly relative to image dimensions for readability
+        # Scale font size slightly relative to image dimensions for readability.
         font_size = max(16, int(cropped_map.width / 80))
         font = ImageFont.truetype("arial.ttf", font_size)
     except IOError:
         font = ImageFont.load_default()
-    # Default to displaying map metadata if no explicit --label is provided
+    # Default to displaying map metadata if no explicit --label is provided.
     if args.label is not None:
         box_text = f"Scale 1:{args.scale}, Latitude {args.lat}, Longitude {args.lon}\n{provider_info['copyright']}"
         if len(args.label) > 0:
@@ -241,7 +241,7 @@ def main():
             # Draw black text inside the box
             draw.text((x + padding, y + padding), box_text, fill="black", font=font)
         
-    # 6. Save output file (PDF, JPG, or PNG)
+    # 6. Save output file (PDF, JPG, or PNG).
     if args.output_format == "pdf":
         temp_png = "tmp_cropped_map.png"
         cropped_map.save(temp_png, "PNG")
@@ -259,7 +259,7 @@ def main():
     elif args.output_format == "png":
         cropped_map.save(output_file, "PNG")
 
-    print(f"Done! Map saved as {output_file}")
+    print(f"Done! Map saved as {output_file}.")
 
 
 if __name__ == "__main__":
