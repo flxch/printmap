@@ -123,6 +123,7 @@ def parse_args():
         help="output file name (default auto-generated based on map parameters); supported formats pdf, jpg, and png",
     )
     parser.add_argument(
+        "-q",
         "--quiet",
         action="store_true",
         help="suppress messages (default: false)",

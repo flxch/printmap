@@ -1,13 +1,22 @@
 # Print Map
 
 Creation of true-to-scale topographic maps or satellite photos from
-web-based map tiles.  The maps or photos can either be output as PDF, JPG, or
-PNG.  For viewing the topographic maps online in a browser, visit the
-web page [OpenTopoMap.org](https://opentopomap.org)
+web-based map tiles.  The maps or photos can either be output as PDF,
+JPG, or PNG.  For viewing the topographic maps online in a browser,
+visit the web page [OpenTopoMap.org](https://opentopomap.org).  For
+license issues, see https://opentopomap.org/about (for topographic
+maps) and
+https://doc.esri.com/en/arcgis-online/latest/reference/static-maps.html
+(for satellite photos), respectively.
 
 ## Usage
 
-The program's command-line flags are as follows:
+`printmap.py` is a small Python program.  It requires the libraries
+`mercantile`, `img2pdf`, `tqdm`, ... , which can be installed by `pip
+install <LIBRARY>`.
+
+The command-line flags of `printmap.puy` are as follows (see also
+`./printmap.py -h`):
 
 - **`--lat`** and **`--lon`**: Latitude and longitude of the map's center
   point.  Both flags are mandatory.
@@ -23,15 +32,16 @@ The program's command-line flags are as follows:
   A0, A1, A2, A3, A4.
 - **`--orientation`** (default: `landscape`): Choose between portrait or
   landscape orientation for the map.  
-- **`--label`**: Optional text annotation added to the map (e.g., "City
-  Map"). If omitted, no annotation is added. If the provided text is
-  the empty string, the annotation defaults to the scale, coordinates,
-  and copyright statement for the map data.
+- **`--label`**: Optional text annotation added to the map (e.g.,
+  "City Map") in a box at the bottom left corner. If the provided text
+  is the empty string, the box only contains the scale, the
+  coordinates, and a copyright statement for the map data.  If
+  omitted, no box and no text is added.
 - **`--output`** (or **`-o`**): Name of the output file. If omitted, a
-  name is auto-generated based on the provider, scale, and format.
-  The suffix of the provided filename determines the file format.  The
-  supported formats are PDF (default), JPG, and PNG.
-- **`--quiet`**: Suppress output.
+  name is auto-generated based on the provider, scale, and paper
+  orientation.  The output format is PDF (default), JPG, or PNG,
+  determined by the file name's suffix.
+- **`--quiet`** (or **`-q`**): Suppress output.
 
 ## Examples
 
@@ -60,33 +70,6 @@ The program's command-line flags are as follows:
     https://opentopomap.org/vector/#16/40.06301/19.79264
   - Create a satellite photo of the same area: `./printmap.py --provider satellite --lat 40.06301 --lon 19.79264 --scale 5000 --zoom 16 --format a0 --label "Palermo Beach, Albania" --output examples/palermobeach_16_5000_landscape_satellite.pdf`
 
-## Notes
-
-* On the web page [OpenTopoMap.org](https://opentopomap.org/) one can
-  look at the topographical map prior to downloading the data and
-  creating the PDF.  One can also read from the web page the aptitude
-  and longitude of the paper center.  For vector graphics, use this
-  [link](https://opentopomap.org/vector).  It is a bit nicer and
-  detailed. But it is also slower in a web browser because it must be
-  rendered.  Unfortunately, the vector data cannot be easily
-  downloaded.
-* For license issues of the tiles, which are downloaded from the
-  internet, see https://opentopomap.org/about (for topographic maps)
-  and
-  https://doc.esri.com/en/arcgis-online/latest/reference/static-maps.html
-  (for satellite photos), respectively.  Note that with the `--label`
-  flag, a small box on the left bottom with copyright statement can be
-  added to the output file.
-* The following Python libraries must be installed: `mercantile`,
-  `img2pdf`, `tqdm`, ...  Use `pip install ...`.
-* A higher zoom level provides more details. More tiles must be
-  downloaded from the map server.
-* Use the map maker sensibly and do not create unnecessary/too much
-  internet traffic.
-* Zoom level 17 is the maximum for topographic maps.  For satellite
-  photos, the maximum is around 19.  This can depend on the area.  Not
-  sure what the minimums are?
-
 # Map Legend
 
 The topographic maps refer to standard topographic map legend
@@ -99,10 +82,29 @@ For additional information:
 - [Official USGS Topo Map
   Symbols](https://pubs.usgs.gov/gip/TopographicMapSymbols/topomapsymbols.pdf)
 
+## Notes
+
+* On the web page [OpenTopoMap.org](https://opentopomap.org/) one can
+  look at the topographical map prior to downloading the data and
+  creating the map, e.g., as PDF.  One can also read from the web page
+  the aptitude and longitude of the paper center.  They are provided
+  in the URL of the shown map.  For vector graphics, use this
+  [link](https://opentopomap.org/vector).  It is a bit nicer and more
+  detailed.  But it is also slower in a web browser because the map
+  must be rendered first.  Unfortunately, the vector data cannot be
+  easily downloaded.
+* A higher zoom level provides more details and more tiles that must
+  be downloaded from the map server.  Choose the zoom level wisely to
+  reduce internet traffic.  (The zoom level is also provided by the
+  URL, when looking at a map in the browser.)  Zoom level 17 is the
+  maximum for topographic maps.  For satellite photos, the maximum is
+  around 19.  The actual value depends on the area.  Not sure what the
+  minimums are, maybe 0 or 1.
+
 # Todos
 
-1. Improve error handling.
-2. Check command-line arguments.
+1. Check command-line arguments, i.e., are the provided values valid.
+2. Improve error handling.
 3. Restructure code: promote modularity and readability. Avoid large,
    monolithic functions to simplify maintenance and testing.
 
