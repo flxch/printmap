@@ -27,12 +27,10 @@ The program's command-line flags are as follows:
   Map"). If omitted, no annotation is added. If the provided text is
   the empty string, the annotation defaults to the scale, coordinates,
   and copyright statement for the map data.
-- **`--output-format`** (default: `pdf`): The output file format,
-  including options for `pdf`, `jpeg`, or `png`. 
 - **`--output`** (or **`-o`**): Name of the output file. If omitted, a
   name is auto-generated based on the provider, scale, and format.
-  The suffix of the provided filename determines the file format,
-  which can be overwritten by the flag `--output-format`.
+  The suffix of the provided filename determines the file format.  The
+  supported formats are PDF (default), JPG, and PNG.
 - **`--quiet`**: Suppress output.
 
 ## Examples

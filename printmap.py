@@ -56,8 +56,8 @@ def warning(b, s):
         print(s, file=sys.stderr)
 
 def error(b, s):
-    if not b:
-        print(s, file=sys.stderr)
+    print(s, file=sys.stderr)
+    # Always output errors on stderr.
 
         
 def parse_args():
@@ -116,18 +116,11 @@ def parse_args():
         help="Custom text for the bottom-left text box (default: no text box)",
     )
     parser.add_argument(
-        "--output-format",
-        type=str.lower,
-        choices=["pdf", "jpg", "png"],
-        default="pdf",
-        help="Output file format: pdf, jpg, or png (default: pdf)",
-    )
-    parser.add_argument(
         "-o",
         "--output",
         type=str,
         default=None,
-        help="output file name (default auto-generated based on format)",
+        help="output file name (default auto-generated based on parameters); supported formats pdf, jpg, and png",
     )
     parser.add_argument(
         "--quiet",
@@ -141,21 +134,12 @@ def main():
     args = parse_args()
 
     # Determine output file and format
-    ext = args.output_format
-    output_file = args.output or f"map_{args.provider}_{args.format}_{args.scale}.{ext}"
-
-    # If the user supplied an output file, try to infer format from its extension
-    # unless output_format is explicitly set (default output_format is 'pdf')
-    valid_exts = {'.pdf': 'pdf', '.jpg': 'jpg', '.jpeg': 'jpg', '.png': 'png'}
-    if args.output:
-        file_ext = os.path.splitext(args.output)[1].lower()
-        if file_ext in valid_exts:
-            # Only override if --output-format is default ('pdf') or not set
-            if args.output_format == 'pdf':
-                ext = valid_exts[file_ext]
-                output_file = args.output
-    if args.output_format != ext:
-        warning(args.quiet, f"Warning: File suffix does not match the file format.")
+    output_file = args.output or f"map_{args.provider}_{args.format}_{args.scale}.pdf"
+    output_format = os.path.splitext(output_file)[1].lower()
+    valid_formats = {'.pdf': 'pdf', '.jpg': 'jpg', '.jpeg': 'jpg', '.png': 'png'}
+    if output_format not in valid_formats:
+        error(args.quiet, f"Unknown file format {output_format}.")
+        os.exit(1)
 
     # 1. Paper size and orientation.
     width_mm, height_mm = DIN_FORMATS_MM[args.format]
@@ -278,7 +262,7 @@ def main():
             draw.text((x + padding, y + padding), box_text, fill="black", font=font)
         
     # 6. Save output file (PDF, JPG, or PNG).
-    if args.output_format == "pdf":
+    if output_format == "pdf":
         temp_png = "tmp_cropped_map.png"
         cropped_map.save(temp_png, "PNG")
 
@@ -290,9 +274,9 @@ def main():
 
         if os.path.exists(temp_png):
             os.remove(temp_png)
-    elif args.output_format == "jpg":
+    elif output_format == "jpg":
         cropped_map.save(output_file, "JPEG", quality=95)
-    elif args.output_format == "png":
+    elif output_format == "png":
         cropped_map.save(output_file, "PNG")
 
     info(args.quiet, f"Done! Map saved as {output_file}.")
