@@ -166,14 +166,11 @@ def main():
     east, north = mercantile.lnglat(max_mx, max_my)
 
     # Print some information about the output.
-    info(args.quiet,
-         f"""
-         Provider: {args.provider}
-         Center: {args.lat} (latitude), {args.lon} (longitude)
-         Area: {real_width_m/1000:.2f} km x {real_height_m/1000:.2f} km
-         Scale: 1:{args.scale}
-         Paper format: {args.format} ({args.orientation})
-         """)
+    info(args.quiet, f"""Provider: {args.provider}
+Center: {args.lat} (latitude), {args.lon} (longitude)
+Area: {real_width_m/1000:.2f} km x {real_height_m/1000:.2f} km
+Scale: 1:{args.scale}
+Paper format: {args.format} ({args.orientation})""")
 
     # 3. Download tiles and put them together.
     tiles = list(mercantile.tiles(west, south, east, north, zooms=args.zoom))
