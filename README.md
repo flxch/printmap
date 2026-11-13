@@ -7,7 +7,17 @@ web page https://opentopomap.org
 
 ## Usage
 
-TODO: Explain the command-line flags.
+The program allows you to generate maps with various options and configuration flags. Below is a detailed explanation of the available command-line flags:
+
+- `--provider` (default: `topographic`): Select the map tile provider. Options include `topographic` (OpenTopoMap) or `satellite` (Esri Satellite).
+- `--lat` and `--lon` (default: `47.073093` and `15.443709`): Latitude and Longitude of the map's center point.
+- `--scale` (default: `25000`): The map's scale, such as 1:5000 for higher detail or 1:25000 for a broader view.
+- `--format` (default: `A4`): Paper format (DIN standard), including sizes like A0, A1, A2, A3, A4.
+- `--orientation` (default: `landscape`): Choose between portrait or landscape orientation for the map.
+- `--zoom` (default: `15`): Defines the tile zoom level for the map. Maximum zoom levels are generally 17 for topographic maps and ~19 for satellite imagery, depending on location.
+- `--output-format` (default: `pdf`): The output file format, including options for `pdf`, `jpeg`, or `png`.
+- `--label`: Optional text annotation added to the map (e.g., "City Map"). If not provided, defaults to metadata like scale and coordinates.
+- `-o` or `--output`: Name of the output file. If omitted, a name is auto-generated based on the provider, scale, and format.
 
 ## Examples
 
@@ -64,8 +74,11 @@ TODO: Explain the command-line flags.
 
 # Map Legend
 
-TODO: Provide links to the pictures depicting and explaining the
-symbols in a topographic map.  See legend subdirectory.
+To assist users in understanding the symbols within generated topographic maps, refer to standard topographic map legend guides. You can find helpful references and examples in the `legend` subdirectory of this project. These resources explain common symbols like contour lines, landmarks, vegetation, and water bodies.
+
+For additional information:
+- [OpenTopoMap Legend](https://opentopomap.org/about#legend)
+- [Official USGS Topo Map Symbols](https://www.usgs.gov/faqs/what-do-symbols-maps-mean)
 
 # Todos
 
