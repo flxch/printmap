@@ -3,7 +3,7 @@
 Creation of true-to-scale topographic maps or satellite photos from
 web-based map tiles.  The maps or photos can either be output as PDF, JPG, or
 PNG.  For viewing the topographic maps online in a browser, visit the
-web page https://opentopomap.org
+web page [OpenTopoMap.org](https://opentopomap.org)
 
 ## Usage
 
@@ -62,27 +62,28 @@ The program's command-line flags are as follows:
 
 ## Notes
 
+* On the web page [OpenTopoMap.org](https://opentopomap.org/) one can
+  look at the topographical map prior to downloading the data and
+  creating the PDF.  One can also read from the web page the aptitude
+  and longitude of the paper center.  For vector graphics, use this
+  [link](https://opentopomap.org/vector).  It is a bit nicer and
+  detailed. But it is also slower in a web browser because it must be
+  rendered.  Unfortunately, the vector data cannot be easily
+  downloaded.
 * For license issues of the tiles, which are downloaded from the
-  internet, see https://opentopomap.org/about and
+  internet, see https://opentopomap.org/about (for topographic maps)
+  and
   https://doc.esri.com/en/arcgis-online/latest/reference/static-maps.html
-  respectively.  Note that with the --label flag, a small box on the
-  left bottom with copyright statement can be added to the output
-  file.
-* On the web pages https://opentopomap.org/ and
-  https://opentopomap.org/vector (vector graphics) one can look at the
-  topographical maps prior to downloading the data and creating the
-  PDF.  One can also read from those web pages the aptitude and
-  longitude of the paper center.  The vector graphics is a bit nicer
-  and detailed.  Unfortunately, the vector data cannot be easily
-  downloaded.  It is also slower in a web browser because it must
-  be rendered.
+  (for satellite photos), respectively.  Note that with the `--label`
+  flag, a small box on the left bottom with copyright statement can be
+  added to the output file.
 * The following Python libraries must be installed: `mercantile`,
   `img2pdf`, `tqdm`, ...  Use `pip install ...`.
-* A higher zoom factor provides more details. More tiles must be
+* A higher zoom level provides more details. More tiles must be
   downloaded from the map server.
 * Use the map maker sensibly and do not create unnecessary/too much
   internet traffic.
-* Zoom factor 17 is the maximum for topographic maps.  For satellite
+* Zoom level 17 is the maximum for topographic maps.  For satellite
   photos, the maximum is around 19.  This can depend on the area.  Not
   sure what the minimums are?
 
