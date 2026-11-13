@@ -80,27 +80,27 @@ def parse_args():
         "--scale",
         type=int,
         default=25000,
-        help="scale, e.g. 5000 for 1:5000 (default: 25000)",
+        help="map scale, e.g. 5000 for 1:5000 (default: 25000)",
     )
     parser.add_argument(
         "--zoom",
         type=int,
         default=15,
-        help="tile zoom, e.g., 14, 15, or 16 (default: 15)",
+        help="tile zoom factor, e.g., 14, 15, or 16 (default: 15)",
     )
     parser.add_argument(
         "--provider",
         type=str.lower,
         choices=list(PROVIDERS.keys()),
         default="topographic",
-        help="Map tile provider: topographic or satellite (default: topographic)",
+        help="map tile provider (default: topographic)",
     )    
     parser.add_argument(
         "--format",
         type=str.upper,
         choices=list(DIN_FORMATS_MM.keys()),
         default="A4",
-        help="paper format (DIN): A0, A1, A2, A3, or A4 (default: A4)",
+        help="DIN paper format (default: A4)",
     )
     parser.add_argument(
         "--orientation",
@@ -113,19 +113,19 @@ def parse_args():
         "--label",
         type=str,
         default=None,
-        help="Custom text for the bottom-left text box (default: no text box)",
+        help="text in bottom-left box (default: no text box)",
     )
     parser.add_argument(
         "-o",
         "--output",
         type=str,
         default=None,
-        help="output file name (default auto-generated based on parameters); supported formats pdf, jpg, and png",
+        help="output file name (default auto-generated based on map parameters); supported formats pdf, jpg, and png",
     )
     parser.add_argument(
         "--quiet",
         action="store_true",
-        help="Suppress output (default: False)",
+        help="suppress messages (default: false)",
     )
     return parser.parse_args()
 
