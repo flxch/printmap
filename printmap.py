@@ -48,15 +48,15 @@ PROVIDERS = {
 
 
 def info(b, s):
-    if !b:
+    if not b:
         print(s, file=sys.stdout)
 
 def warning(b, s):
-    if !b:
+    if not b:
         print(s, file=sys.stderr)
 
 def error(b, s):
-    if !b:
+    if not b:
         print(s, file=sys.stderr)
 
         
