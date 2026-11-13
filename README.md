@@ -9,28 +9,31 @@ web page https://opentopomap.org
 
 The program's command-line flags are as follows:
 
-- **`--provider`** (default: `topographic`): Select the map tile
-  provider. Options include `topographic` (OpenTopoMap) or `satellite`
-  (Esri Satellite).
 - **`--lat`** and **`--lon`**: Latitude and longitude of the map's center
   point.  Both flags are mandatory.
 - **`--scale`** (default: `25000`): The map's scale, such as 1:5000 for
   higher detail or 1:25000 for a broader view.
-- `--format` (default: `A4`): Paper format (DIN standard),
-  A0, A1, A2, A3, A4.
-- **`--orientation`** (default: `landscape`): Choose between portrait or
-  landscape orientation for the map.
 - **`--zoom`** (default: `15`): Defines the tile zoom level for the
   map. Maximum zoom levels are generally 17 for topographic maps and
   ~19 for satellite imagery, depending on location.
-- **`--output-format`** (default: `pdf`): The output file format,
-  including options for `pdf`, `jpeg`, or `png`.
+- **`--provider`** (default: `topographic`): Select the map tile
+  provider. Options include `topographic` (OpenTopoMap) or `satellite`
+  (Esri Satellite). 
+- **`--format`** (default: `A4`): Paper format (DIN standard),
+  A0, A1, A2, A3, A4.
+- **`--orientation`** (default: `landscape`): Choose between portrait or
+  landscape orientation for the map.  
 - **`--label`**: Optional text annotation added to the map (e.g., "City
   Map"). If omitted, no annotation is added. If the provided text is
   the empty string, the annotation defaults to the scale, coordinates,
   and copyright statement for the map data.
-- **`--output`** (or **`-o`**): Name of the output file. If omitted, a name is
-  auto-generated based on the provider, scale, and format.
+- **`--output-format`** (default: `pdf`): The output file format,
+  including options for `pdf`, `jpeg`, or `png`. 
+- **`--output`** (or **`-o`**): Name of the output file. If omitted, a
+  name is auto-generated based on the provider, scale, and format.
+  The suffix of the provided filename determines the file format,
+  which can be overwritten by the flag `--output-format`.
+- **`--quiet`**: Suppress output.
 
 ## Examples
 
@@ -101,10 +104,6 @@ For additional information:
 
 1. Improve error handling.
 2. Check command-line arguments.
-3. Set output file format depending on the suffix of the output file.
-   The output-format flag overwrites this.
-4. Add quiet flag for no output on stdout.
-5. Errors should be printed on stderr.
-6. Restructure code: promote modularity and readability. Avoid large,
+3. Restructure code: promote modularity and readability. Avoid large,
    monolithic functions to simplify maintenance and testing.
 

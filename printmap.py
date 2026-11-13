@@ -4,6 +4,7 @@ import argparse
 import io
 import math
 import os
+import sys
 import time
 import requests
 import mercantile
@@ -46,16 +47,22 @@ PROVIDERS = {
 }
 
 
+def info(b, s):
+    if !b:
+        print(s, file=sys.stdout)
+
+def warning(b, s):
+    if !b:
+        print(s, file=sys.stderr)
+
+def error(b, s):
+    if !b:
+        print(s, file=sys.stderr)
+
+        
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Create true-to-scale topographic maps or satellite photos from web tiles."
-    )
-    parser.add_argument(
-        "--provider",
-        type=str.lower,
-        choices=list(PROVIDERS.keys()),
-        default="topographic",
-        help="Map tile provider: topographic or satellite (default: topographic)",
     )
     parser.add_argument(
         "--lat",
@@ -76,6 +83,19 @@ def parse_args():
         help="scale, e.g. 5000 for 1:5000 (default: 25000)",
     )
     parser.add_argument(
+        "--zoom",
+        type=int,
+        default=15,
+        help="tile zoom, e.g., 14, 15, or 16 (default: 15)",
+    )
+    parser.add_argument(
+        "--provider",
+        type=str.lower,
+        choices=list(PROVIDERS.keys()),
+        default="topographic",
+        help="Map tile provider: topographic or satellite (default: topographic)",
+    )    
+    parser.add_argument(
         "--format",
         type=str.upper,
         choices=list(DIN_FORMATS_MM.keys()),
@@ -90,10 +110,10 @@ def parse_args():
         help="paper orientation (default: landscape)",
     )
     parser.add_argument(
-        "--zoom",
-        type=int,
-        default=15,
-        help="tile zoom, e.g., 14, 15, or 16 (default: 15)",
+        "--label",
+        type=str,
+        default=None,
+        help="Custom text for the bottom-left text box (default: no text box)",
     )
     parser.add_argument(
         "--output-format",
@@ -103,17 +123,16 @@ def parse_args():
         help="Output file format: pdf, jpg, or png (default: pdf)",
     )
     parser.add_argument(
-        "--label",
-        type=str,
-        default=None,
-        help="Custom text for the bottom-left text box (default: no text box)",
-    )
-    parser.add_argument(
         "-o",
         "--output",
         type=str,
         default=None,
         help="output file name (default auto-generated based on format)",
+    )
+    parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Suppress output (default: False)",
     )
     return parser.parse_args()
 
@@ -121,9 +140,22 @@ def parse_args():
 def main():
     args = parse_args()
 
-    # Determine default output extension if not specified.
+    # Determine output file and format
     ext = args.output_format
     output_file = args.output or f"map_{args.provider}_{args.format}_{args.scale}.{ext}"
+
+    # If the user supplied an output file, try to infer format from its extension
+    # unless output_format is explicitly set (default output_format is 'pdf')
+    valid_exts = {'.pdf': 'pdf', '.jpg': 'jpg', '.jpeg': 'jpg', '.png': 'png'}
+    if args.output:
+        file_ext = os.path.splitext(args.output)[1].lower()
+        if file_ext in valid_exts:
+            # Only override if --output-format is default ('pdf') or not set
+            if args.output_format == 'pdf':
+                ext = valid_exts[file_ext]
+                output_file = args.output
+    if args.output_format != ext:
+        warning(args.quiet, f"Warning: File suffix does not match the file format.")
 
     # 1. Paper size and orientation.
     width_mm, height_mm = DIN_FORMATS_MM[args.format]
@@ -149,15 +181,18 @@ def main():
     east, north = mercantile.lnglat(max_mx, max_my)
 
     # Print some information about the output.
-    print(f"Provider: {args.provider}")
-    print(f"Center: {args.lat} (latitude), {args.lon} (longitude)")
-    print(f"Area: {real_width_m/1000:.2f} km x {real_height_m/1000:.2f} km")    
-    print(f"Scale: 1:{args.scale}")
-    print(f"Paper format: {args.format} ({args.orientation})")
+    info(args.quiet,
+         f"""
+         Provider: {args.provider}
+         Center: {args.lat} (latitude), {args.lon} (longitude)
+         Area: {real_width_m/1000:.2f} km x {real_height_m/1000:.2f} km
+         Scale: 1:{args.scale}
+         Paper format: {args.format} ({args.orientation})
+         """)
 
     # 3. Download tiles and put them together.
     tiles = list(mercantile.tiles(west, south, east, north, zooms=args.zoom))
-    print(f"Total number of tiles for zoom {args.zoom}: {len(tiles)}")
+    info(args.quiet, f"Total number of tiles for zoom {args.zoom}: {len(tiles)}")
 
     min_tx = min(t.x for t in tiles)
     max_tx = max(t.x for t in tiles)
@@ -171,7 +206,8 @@ def main():
     provider_info = PROVIDERS[args.provider]
     headers = {"User-Agent": provider_info["user_agent"]}
 
-    for idx, t in enumerate(tqdm(tiles, desc="Downloading tiles"), 1):
+    tqdm_bar = tqdm(tiles, desc="Downloading tiles", disable=args.quiet)
+    for idx, t in enumerate(tqdm_bar, 1):
         # Format URL template depending on the tile provider's coordinate
         # layout schema
         url = provider_info["url"].format(z=t.z, x=t.x, y=t.y)
@@ -183,7 +219,7 @@ def main():
             y_pos = (t.y - min_ty) * 256
             canvas.paste(tile_img, (x_pos, y_pos))
         else:
-            print(f"Error at tile {t.x}/{t.y}: HTTP {response.status_code}")
+            error(args.quiet, f"Error at tile {t.x}/{t.y}: HTTP {response.status_code}")
             # Will be an empty tile in the picture.
             
         time.sleep(0.1)
@@ -259,7 +295,7 @@ def main():
     elif args.output_format == "png":
         cropped_map.save(output_file, "PNG")
 
-    print(f"Done! Map saved as {output_file}.")
+    info(args.quiet, f"Done! Map saved as {output_file}.")
 
 
 if __name__ == "__main__":
