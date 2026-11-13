@@ -138,8 +138,8 @@ def main():
     output_format = os.path.splitext(output_file)[1].lower()
     valid_formats = {'.pdf': 'pdf', '.jpg': 'jpg', '.jpeg': 'jpg', '.png': 'png'}
     if output_format not in valid_formats:
-        error(args.quiet, f"Unknown file format {output_format}.")
-        os.exit(1)
+        error(args.quiet, f"Unknown file format: {output_format}")
+        sys.exit(1)
 
     # 1. Paper size and orientation.
     width_mm, height_mm = DIN_FORMATS_MM[args.format]
@@ -262,7 +262,7 @@ def main():
             draw.text((x + padding, y + padding), box_text, fill="black", font=font)
         
     # 6. Save output file (PDF, JPG, or PNG).
-    if output_format == "pdf":
+    if output_format == ".pdf":
         temp_png = "tmp_cropped_map.png"
         cropped_map.save(temp_png, "PNG")
 
@@ -274,9 +274,9 @@ def main():
 
         if os.path.exists(temp_png):
             os.remove(temp_png)
-    elif output_format == "jpg":
+    elif output_format == ".jpg":
         cropped_map.save(output_file, "JPEG", quality=95)
-    elif output_format == "png":
+    elif output_format == ".png":
         cropped_map.save(output_file, "PNG")
 
     info(args.quiet, f"Done! Map saved as {output_file}.")
