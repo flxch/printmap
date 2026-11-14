@@ -134,6 +134,28 @@ def parse_args():
 def main():
     args = parse_args()
 
+    # --- Begin manual argument validation ---
+    # Latitude
+    if not (-90.0 <= args.lat <= 90.0):
+        error(args.quiet, f"Error: Latitude {args.lat} out of valid range (-90 to 90)")
+        sys.exit(1)
+    # Longitude
+    if not (-180.0 <= args.lon <= 180.0):
+        error(args.quiet, f"Error: Longitude {args.lon} out of valid range (-180 to 180)")
+        sys.exit(1)
+    # Scale
+    if not (args.scale > 0 and args.scale < 1_000_000):
+        error(args.quiet, f"Error: Scale {args.scale} must be > 0 and < 1,000,000")
+        sys.exit(1)
+    # Zoom (provider dependent)
+    provider_zoom_max = {"topographic": 17, "satellite": 19}
+    zoom_min = 0
+    zoom_max = provider_zoom_max.get(args.provider, 19)
+    if not (zoom_min <= args.zoom <= zoom_max):
+        error(args.quiet, f"Error: Zoom {args.zoom} must be between {zoom_min} and {zoom_max} for provider '{args.provider}'")
+        sys.exit(1)
+    # --- End manual validation ---
+
     # Determine output file and format
     output_file = args.output or f"map_{args.provider}_{args.format}_{args.scale}.pdf"
     output_format = os.path.splitext(output_file)[1].lower()
@@ -190,20 +212,25 @@ Paper format: {args.format} ({args.orientation})""")
 
     tqdm_bar = tqdm(tiles, desc="Downloading tiles", disable=args.quiet)
     for idx, t in enumerate(tqdm_bar, 1):
-        # Format URL template depending on the tile provider's coordinate
-        # layout schema
         url = provider_info["url"].format(z=t.z, x=t.x, y=t.y)
+        try:
+            response = requests.get(url, headers=headers, timeout=20)
+        except requests.RequestException as e:
+            error(args.quiet, f"Network error when downloading tile {t.x}/{t.y}: {e}")
+            sys.exit(1)
         
-        response = requests.get(url, headers=headers)
         if response.status_code == 200:
-            tile_img = Image.open(io.BytesIO(response.content)).convert("RGB")
+            try:
+                tile_img = Image.open(io.BytesIO(response.content)).convert("RGB")
+            except Exception as e:
+                error(args.quiet, f"Failed to process image for tile {t.x}/{t.y}: {e}")
+                sys.exit(1)
             x_pos = (t.x - min_tx) * 256
             y_pos = (t.y - min_ty) * 256
             canvas.paste(tile_img, (x_pos, y_pos))
         else:
-            error(args.quiet, f"Error at tile {t.x}/{t.y}: HTTP {response.status_code}")
-            # Will be an empty tile in the picture.
-            
+            error(args.quiet, f"HTTP error at tile {t.x}/{t.y}: HTTP {response.status_code}")
+            sys.exit(1)
         time.sleep(0.1)
 
     # 4. Crop map at borders.
@@ -262,24 +289,44 @@ Paper format: {args.format} ({args.orientation})""")
     # 6. Save output file (PDF, JPG, or PNG).
     if output_format == ".pdf":
         temp_png = "tmp_cropped_map.png"
-        cropped_map.save(temp_png, "PNG")
-
-        pdf_layout = img2pdf.get_layout_fun(
-            (img2pdf.mm_to_pt(width_mm), img2pdf.mm_to_pt(height_mm))
-        )
-        with open(output_file, "wb") as f:
-            f.write(img2pdf.convert(temp_png, layout_fun=pdf_layout))
-
+        try:
+            cropped_map.save(temp_png, "PNG")
+        except Exception as e:
+            error(args.quiet, f"Failed to save temporary PNG ('{temp_png}'): {e}")
+            sys.exit(1)
+        try:
+            pdf_layout = img2pdf.get_layout_fun(
+                (img2pdf.mm_to_pt(width_mm), img2pdf.mm_to_pt(height_mm))
+            )
+            with open(output_file, "wb") as f:
+                f.write(img2pdf.convert(temp_png, layout_fun=pdf_layout))
+        except Exception as e:
+            error(args.quiet, f"Failed to create or save PDF ('{output_file}'): {e}")
+            if os.path.exists(temp_png):
+                os.remove(temp_png)
+            sys.exit(1)
         if os.path.exists(temp_png):
             os.remove(temp_png)
     elif output_format == ".jpg":
-        cropped_map.save(output_file, "JPEG", quality=95)
+        try:
+            cropped_map.save(output_file, "JPEG", quality=95)
+        except Exception as e:
+            error(args.quiet, f"Failed to save JPEG ('{output_file}'): {e}")
+            sys.exit(1)
     elif output_format == ".png":
-        cropped_map.save(output_file, "PNG")
+        try:
+            cropped_map.save(output_file, "PNG")
+        except Exception as e:
+            error(args.quiet, f"Failed to save PNG ('{output_file}'): {e}")
+            sys.exit(1)
 
     info(args.quiet, f"Done! Map saved as {output_file}.")
 
 
 if __name__ == "__main__":
-    main()
-    
+    try:
+        main()
+    except Exception as e:
+        print(f"Fatal error: {e}", file=sys.stderr)
+        sys.exit(1)
+

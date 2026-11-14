@@ -103,8 +103,6 @@ For additional information:
 
 # Todos
 
-1. Check command-line arguments, i.e., are the provided values valid.
-2. Improve error handling.
-3. Restructure code: promote modularity and readability. Avoid large,
+1. Restructure code: promote modularity and readability. Avoid large,
    monolithic functions to simplify maintenance and testing.
-
+2. Add comments to document the code better.
