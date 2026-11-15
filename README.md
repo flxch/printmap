@@ -12,8 +12,8 @@ https://doc.esri.com/en/arcgis-online/latest/reference/static-maps.html
 ## Usage
 
 `printmap.py` is a small Python program.  It requires the libraries
-`mercantile`, `img2pdf`, `tqdm`, ... , which can be installed by `pip
-install <LIBRARY>`.
+`mercantile`, `img2pdf`, `tqdm`, `requests`, and `Pillow`, which can
+be installed by `pip install <LIBRARY>`.
 
 The command-line flags of `printmap.puy` are as follows (see also
 `./printmap.py -h`):
@@ -100,6 +100,8 @@ For additional information:
   maximum for topographic maps.  For satellite photos, the maximum is
   around 19.  The actual value depends on the area.  Not sure what the
   minimums are, maybe 0 or 1.
+
+---
 
 # Todos
 
