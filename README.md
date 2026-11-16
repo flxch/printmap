@@ -12,7 +12,7 @@ https://doc.esri.com/en/arcgis-online/latest/reference/static-maps.html
 ## Usage
 
 `printmap.py` is a small Python program.  It requires the libraries
-`mercantile`, `img2pdf`, `tqdm`, `requests`, and `Pillow`, which can
+`img2pdf`, `mercantile`, `Pillow`, `requests`, and `tqdm`, which can
 be installed by `pip install <LIBRARY>`.
 
 The command-line flags of `printmap.puy` are as follows (see also
@@ -28,10 +28,10 @@ The command-line flags of `printmap.puy` are as follows (see also
 - **`--provider`** (default: `topographic`): Select the map tile
   provider. Options include `topographic` (OpenTopoMap) or `satellite`
   (Esri Satellite). 
-- **`--format`** (default: `A4`): Paper format (DIN standard),
-  A0, A1, A2, A3, A4.
+- **`--format`** (default: `A4`): Paper format (DIN standard) A0, A1,
+  A2, A3, A4.
 - **`--orientation`** (default: `landscape`): Choose between portrait or
-  landscape orientation for the map.  
+  landscape orientation for the map.
 - **`--label`**: Optional text annotation added to the map (e.g.,
   "City Map") in a box at the bottom left corner. If the provided text
   is the empty string, the box only contains the scale, the
