@@ -9,6 +9,7 @@ from pathlib import Path
 import sys
 import tempfile
 import time
+from typing import Any, Tuple, List
 
 import img2pdf
 import mercantile
@@ -90,28 +91,21 @@ class Bounds:
         return self.min_x <= x <= self.max_x and self.min_y <= y <= self.max_y
 
 
-def info_msg(b: bool, s: str):
+def info_msg(s: str, quiet: bool = False) -> None:
     """
     Print an informational message if b is true.
     """
     if not b:
         print(s, file=sys.stdout)
 
-def warning_msg(b: bool, s: str):
-    """
-    Print a warning message unless if b is true.
-    """
-    if not b:
-        print(s, file=sys.stderr)
-
-def error_msg(s: str):
+def error_msg(s: str) -> None:
     """
     Print an error message (always to stderr).
     """
     print(s, file=sys.stderr)
 
         
-def parse_args():
+def parse_args() -> argparse.Namespace:
     """
     Parse command-line arguments and return them as a Namespace.
     """
@@ -185,14 +179,13 @@ def parse_args():
     )
     return parser.parse_args()
 
-def validate_args(args):
+def validate_args(args: argparse.Namespace) -> None:
     """
     Validate the parsed arguments for allowed value ranges.  Raises an exception if an argument is out of bounds.
     """
     if not (-90.0 <= args.lat <= 90.0):
         raise MapGenError(f"Error: Latitude {args.lat} out of valid range (-90 to 90)")
     if not (-180.0 <= args.lon <= 180.0):
-        error(args.quiet, msg)
         raise MapGenError(f"Error: Longitude {args.lon} out of valid range (-180 to 180)")
     if not (args.scale > 0 and args.scale < 1_000_000):
         raise MapGenError(f"Error: Scale {args.scale} must be > 0 and < 1,000,000")
@@ -203,7 +196,7 @@ def validate_args(args):
         raise MapGenError(f"Error: Zoom {args.zoom} must be between {zoom_min} and "
                           f"{zoom_max} for provider '{args.provider}'")
 
-def determine_output(args) -> tuple[Path, str]:
+def determine_output(args: argparse.Namespace) -> tuple[Path, str]:
     """
     Return output Path object and file extension format using. Raises an exception if
     file format is unknown, i.e., path suffix is neither .pdf nor .jpg/.jpeg nor .png.
@@ -216,7 +209,7 @@ def determine_output(args) -> tuple[Path, str]:
 
 
 
-def get_paper_size_mm(args) -> Size:
+def get_paper_size_mm(args: argparse.Namespace) -> Size:
     """
     Get the physical paper size, considering orientation, as a Size.
     """
@@ -234,7 +227,7 @@ def get_map_size_m(paper_size_mm: Size, scale: int) -> Size:
     return Size(width_m, height_m)
 
 
-def calculate_mercator_bounds(lon: float, lat: float, map_size_m: Size):
+def calculate_mercator_bounds(lon: float, lat: float, map_size_m: Size) -> tuple[Bounds, float, float]:
     """
     Convert map dimensions and center to mercator projection
     limits.  Returns a Bounds object and Mercator center coordinates.
@@ -249,18 +242,18 @@ def calculate_mercator_bounds(lon: float, lat: float, map_size_m: Size):
     max_my = center_y + half_merc_h
     return Bounds(min_mx, max_mx, min_my, max_my), center_x, center_y
 
-def determine_tiles(min_mx, max_mx, min_my, max_my, zoom: int):
+def determine_tiles(area: Bounds, zoom: int) -> list[Any]:
     """
     Compute the list of map tiles needed to cover the requested area and
     returns the list.
     """
-    west, south = mercantile.lnglat(min_mx, min_my)
-    east, north = mercantile.lnglat(max_mx, max_my)
+    west, south = mercantile.lnglat(area.min_x, area.min_y)
+    east, north = mercantile.lnglat(area.max_x, area.max_y)
     tiles = list(mercantile.tiles(west, south, east, north, zooms=zoom))
     return tiles
 
 
-def get_tile_boundaries(tiles):
+def get_tile_boundaries(tiles: list[Any]) -> tuple[Bounds, Size]:
     """
     Compute tile min/max x/y indices and return as Bounds, along
     with needed canvas Size in pixels.
@@ -273,7 +266,7 @@ def get_tile_boundaries(tiles):
     return Bounds(min_tx, max_tx, min_ty, max_ty), canvas_size
 
 
-def download_and_stitch_tiles(tiles, tile_grid: Bounds, canvas_size: Size, args):
+def download_and_stitch_tiles(tiles: list[Any], tile_grid: Bounds, canvas_size: Size, args: argparse.Namespace) -> Image.Image:
     """
     Download all needed map tiles and stitch them into a single
     canvas.  Raises and exception if downloading or stiching fails.
@@ -301,7 +294,7 @@ def download_and_stitch_tiles(tiles, tile_grid: Bounds, canvas_size: Size, args)
         time.sleep(0.1)
     return canvas
 
-def crop_canvas(canvas, area_bounds: Bounds, grid_bounds: Bounds, canvas_size: Size, zoom: int):
+def crop_canvas(canvas: Image.Image, area_bounds: Bounds, grid_bounds: Bounds, canvas_size: Size, zoom: int) -> Image.Image:
     """
     Crop the stitched tile canvas to the correct geographical extent
     using Bounds objects for both the requested map area and the
@@ -332,7 +325,7 @@ def crop_canvas(canvas, area_bounds: Bounds, grid_bounds: Bounds, canvas_size: S
     return canvas.crop((crop_left, crop_top, crop_right, crop_bottom))
 
 
-def build_label(provider_info, args):
+def build_label(provider_info: dict[str, Any], args: argparse.Namespace) -> str:
     """
     Construct the annotation text for the map (label, scale, etc.).
     """
@@ -342,7 +335,7 @@ def build_label(provider_info, args):
         box_text = f"{args.label}\n" + box_text
     return box_text
 
-def add_annotation_box(image, args):
+def add_annotation_box(image: Image.Image, args: argparse.Namespace) -> None:
     """
     Draw annotation box with metadata and label at bottom left of the map.
     """
@@ -371,7 +364,7 @@ def add_annotation_box(image, args):
         draw.text((x + padding, y + padding), text, fill="black", font=font)
 
 
-def save_output_file(image, output_file: Path, output_format: str, paper_size_mm: Size):
+def save_output_file(image: Image.Image, output_file: Path, output_format: str, paper_size_mm: Size) -> None:
     """
     Save the final map to disk as PDF, JPG, or PNG. Raises an expection on failure.
     """
@@ -401,7 +394,7 @@ def save_output_file(image, output_file: Path, output_format: str, paper_size_mm
         except Exception as e:
             raise MapGenError(f"Failed to save PNG ('{output_path}'): {e}")
 
-def main():
+def main() -> None:
     """
     Main orchestration: parse args, validate, build map, and save output.
     """
@@ -416,16 +409,13 @@ def main():
         # Calculate Mercator bounds for the map area.
         area_bounds, center_x, center_y = calculate_mercator_bounds(args.lon, args.lat, map_size_m)
         # Determine tiles to fetch for the requested area.
-        tiles = determine_tiles(area_bounds.min_x, area_bounds.max_x,
-                                area_bounds.min_y, area_bounds.max_y, args.zoom)
-        info_msg(args.quiet,
-                 f"Provider: {args.provider}\n"
+        tiles = determine_tiles(area_bounds, args.zoom)
+        info_msg(f"Provider: {args.provider}\n"
                  f"Center: {args.lat} (latitude), {args.lon} (longitude)\n"
                  f"Area: {map_size_m.width/1000:.2f} km x {map_size_m.height/1000:.2f} km\n"
                  f"Scale: 1:{args.scale}\n"
                  f"Paper format: {args.format} ({args.orientation})")
-        info_msg(args.quiet,
-                 f"Total number of tiles for zoom {args.zoom}: {len(tiles)}")
+        info_msg(f"Total number of tiles for zoom {args.zoom}: {len(tiles)}")
 
         # Compute tile grid bounds and canvas size (Mercator px bounds).
         grid_bounds, canvas_size = get_tile_boundaries(tiles)
@@ -438,7 +428,7 @@ def main():
         
         # Save map as PDF/JPG/PNG.
         save_output_file(cropped_map, filepath, fileformat, paper_size_mm)
-        info_msg(args.quiet, f"Done! Map saved as {filepath}.")
+        info_msg(f"Done! Map saved as {filepath}.")
     except MapGenError as e:
         error_msg(str(e))
         sys.exit(1)
