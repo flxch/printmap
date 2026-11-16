@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import argparse
+from dataclasses import dataclass
 import io
 import math
 import os
@@ -12,7 +13,6 @@ import mercantile
 from PIL import Image, ImageDraw, ImageFont
 import requests
 from tqdm import tqdm
-from dataclasses import dataclass
 
 
 # Disable Pillow's decompression bomb limit for large stitched maps.
@@ -81,7 +81,6 @@ class Bounds:
 
     def contains(self, x, y):
         return self.min_x <= x <= self.max_x and self.min_y <= y <= self.max_y
-
 
 
 def info(b, s):
@@ -314,7 +313,7 @@ def crop_canvas(canvas, area_bounds: Bounds, grid_bounds: Bounds, canvas_size: S
     crop_right = int(round((area_bounds.max_x - grid_bounds.min_x) * px_per_m_x))
     crop_top = int(round((grid_bounds.max_y - area_bounds.max_y) * px_per_m_y))
     crop_bottom = int(round((grid_bounds.max_y - area_bounds.min_y) * px_per_m_y))
-    return canvas.crop((crop_left, crop_top, crop_right, crop_bottom))
+    return canvas.crop(crop_left, crop_top, crop_right, crop_bottom)
 
 
 def build_label(provider_info, args):
@@ -436,9 +435,10 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"Fatal error: {e}", file=sys.stderr)
-        sys.exit(1)
+    main()
+#    try:
+#        main()
+#    except Exception as e:
+#        print(f"Fatal error: {e}", file=sys.stderr)
+#        sys.exit(1)
 

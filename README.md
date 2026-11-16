@@ -106,5 +106,7 @@ For additional information:
 # Todos
 
 1. Restructure code: promote modularity and readability. Avoid large,
-   monolithic functions to simplify maintenance and testing.
-2. Add comments to document the code better.
+   monolithic functions to simplify maintenance and testing. (ongoing)
+2. Add comments to document the code better. (ongoing)
+3. Write temporary files to "official" /tmp directory. Add random
+   identifier to temporary file name to not interfere with other runs.
