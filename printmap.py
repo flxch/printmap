@@ -419,8 +419,9 @@ def main() -> None:
                  f"Center: {args.lat} (latitude), {args.lon} (longitude)\n"
                  f"Area: {map_size_m.width/1000:.2f} km x {map_size_m.height/1000:.2f} km\n"
                  f"Scale: 1:{args.scale}\n"
-                 f"Paper format: {args.format} ({args.orientation})")
-        info_msg(f"Total number of tiles for zoom {args.zoom}: {len(tiles)}")
+                 f"Paper format: {args.format} ({args.orientation})",
+                 args.quiet)
+        info_msg(f"Total number of tiles for zoom {args.zoom}: {len(tiles)}", args.quiet)
 
         # Compute tile grid bounds and canvas size (Mercator px bounds).
         grid_bounds, canvas_size = get_tile_boundaries(tiles)
@@ -433,7 +434,7 @@ def main() -> None:
         
         # Save map as PDF/JPG/PNG.
         save_output_file(cropped_map, filepath, fileformat, paper_size_mm)
-        info_msg(f"Done! Map saved as {filepath}.")
+        info_msg(f"Done! Map saved as {filepath}.", args.quiet)
     except MapGenError as e:
         error_msg(str(e))
         sys.exit(1)
