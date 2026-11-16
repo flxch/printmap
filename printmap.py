@@ -313,7 +313,7 @@ def crop_canvas(canvas, area_bounds: Bounds, grid_bounds: Bounds, canvas_size: S
     crop_right = int(round((area_bounds.max_x - grid_bounds.min_x) * px_per_m_x))
     crop_top = int(round((grid_bounds.max_y - area_bounds.max_y) * px_per_m_y))
     crop_bottom = int(round((grid_bounds.max_y - area_bounds.min_y) * px_per_m_y))
-    return canvas.crop(crop_left, crop_top, crop_right, crop_bottom)
+    return canvas.crop((crop_left, crop_top, crop_right, crop_bottom))
 
 
 def build_label(provider_info, args):
@@ -431,7 +431,7 @@ def main():
 
     # Save map as PDF/JPG/PNG.
     save_output_file(cropped_map, filename, fileformat, paper_size_mm, args.quiet)
-    info(args.quiet, f"Done! Map saved as {output_file}.")
+    info(args.quiet, f"Done! Map saved as {filename}.")
 
 
 if __name__ == "__main__":

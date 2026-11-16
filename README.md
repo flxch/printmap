@@ -110,3 +110,11 @@ For additional information:
 2. Add comments to document the code better. (ongoing)
 3. Write temporary files to "official" /tmp directory. Add random
    identifier to temporary file name to not interfere with other runs.
+4. pathlib Integration: Replaced legacy os.path methods with modern,
+   object-oriented pathlib.Path for output files and temporary files.
+5. Decoupled Error Handling (sys.exit removal): Low-level functions no
+   longer call sys.exit(1) directly. Instead, they raise a custom
+   MapGenError, cleanly separating business logic from the
+   command-line interface so the code can be reused programmatically.
+6. Graceful Exception Catching in main(): All expected errors are
+   caught in a single central block at the application boundary.
