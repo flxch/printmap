@@ -105,4 +105,5 @@ For additional information:
 
 # Todos
 
-None at the moment.
+1. Retry if the download of a tile fails before raising an exception.
+   Maybe 2 or 3 attemps might make sense.

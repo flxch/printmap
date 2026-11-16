@@ -40,14 +40,17 @@ PROVIDERS = {
         "url": "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
         "user_agent": "PrivatesKartenProjekt/1.0 (kontakt@beispiel.at)",
         "is_y_inverted": False,
-        "copyright": "Map Data: © OpenStreetMap Contributors, SRTM\nMap Style: © OpenTopoMap (CC-BY-SA)"
+        "copyright": "Map Data: © OpenStreetMap Contributors, SRTM\n"
+                     "Map Style: © OpenTopoMap (CC-BY-SA)"
     },
     "satellite": {
         "site": "https://server.arcgisonline.com",
         "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         "user_agent": "PrivateSatelliteMapProject/1.0 (kontakt@beispiel.at)",
         "is_y_inverted": True,
-        "copyright": "Map image is the intellectual property of Esri and is used herein under license.\n© 2026 Esri and its licensors. All rights reserved."
+        "copyright": "Map image is the intellectual property of Esri and "
+                     "is used herein under license.\n© 2026 Esri and its "
+                     "licensors. All rights reserved."
     }
 }
 
@@ -93,9 +96,9 @@ class Bounds:
 
 def info_msg(s: str, quiet: bool = False) -> None:
     """
-    Print an informational message if b is true.
+    Print an informational message if quiet is true.
     """
-    if not b:
+    if not quiet:
         print(s, file=sys.stdout)
 
 def error_msg(s: str) -> None:
@@ -169,7 +172,8 @@ def parse_args() -> argparse.Namespace:
         "--output",
         type=str,
         default=None,
-        help="output file name (default auto-generated based on map parameters); supported formats pdf, jpg, and png",
+        help="output file name (default auto-generated based on "
+             "map parameters); supported formats pdf, jpg, and png",
     )
     parser.add_argument(
         "-q",
@@ -181,7 +185,8 @@ def parse_args() -> argparse.Namespace:
 
 def validate_args(args: argparse.Namespace) -> None:
     """
-    Validate the parsed arguments for allowed value ranges.  Raises an exception if an argument is out of bounds.
+    Validate the parsed arguments for allowed value ranges.
+    Raises an exception if an argument is out of bounds.
     """
     if not (-90.0 <= args.lat <= 90.0):
         raise MapGenError(f"Error: Latitude {args.lat} out of valid range (-90 to 90)")
@@ -229,8 +234,8 @@ def get_map_size_m(paper_size_mm: Size, scale: int) -> Size:
 
 def calculate_mercator_bounds(lon: float, lat: float, map_size_m: Size) -> tuple[Bounds, float, float]:
     """
-    Convert map dimensions and center to mercator projection
-    limits.  Returns a Bounds object and Mercator center coordinates.
+    Convert map dimensions and center to mercator projection limits.
+    Returns a Bounds object and Mercator center coordinates.
     """
     center_x, center_y = mercantile.xy(lon, lat)
     mercator_scale_factor = 1.0 / math.cos(math.radians(lat))
@@ -268,8 +273,8 @@ def get_tile_boundaries(tiles: list[Any]) -> tuple[Bounds, Size]:
 
 def download_and_stitch_tiles(tiles: list[Any], tile_grid: Bounds, canvas_size: Size, args: argparse.Namespace) -> Image.Image:
     """
-    Download all needed map tiles and stitch them into a single
-    canvas.  Raises and exception if downloading or stiching fails.
+    Download all needed map tiles and stitch them into a single canvas.
+    Raises and exception if downloading or stiching fails.
     """
     provider_info = PROVIDERS[args.provider]
     headers = {"User-Agent": provider_info["user_agent"]}
