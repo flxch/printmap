@@ -105,7 +105,6 @@ For additional information:
 
 # Todos
 
-1. Restructure code: promote modularity and readability. Avoid large,
-   monolithic functions to simplify maintenance and testing. (ongoing)
+1. Check for further improvements of the code.
 2. Update and add comments to document the code better.  Add types to
    functions including the functions' return value.

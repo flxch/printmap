@@ -240,7 +240,7 @@ def calculate_mercator_bounds(lon: float, lat: float, map_size_m: Size):
     limits.  Returns a Bounds object and Mercator center coordinates.
     """
     center_x, center_y = mercantile.xy(lon, lat)
-    mercator_scale_factor = 1.0 / math.cos(math.radians(args.lat))
+    mercator_scale_factor = 1.0 / math.cos(math.radians(lat))
     half_merc_w = (map_size_m.width * mercator_scale_factor) / 2.0
     half_merc_h = (map_size_m.height * mercator_scale_factor) / 2.0
     min_mx = center_x - half_merc_w
@@ -260,7 +260,7 @@ def determine_tiles(min_mx, max_mx, min_my, max_my, zoom: int):
     return tiles
 
 
-def get_tile_boundaries(tiles, args):
+def get_tile_boundaries(tiles):
     """
     Compute tile min/max x/y indices and return as Bounds, along
     with needed canvas Size in pixels.
