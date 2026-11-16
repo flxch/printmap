@@ -248,8 +248,8 @@ def calculate_mercator_bounds(args, map_size_m: Size):
 
 def determine_tiles(min_mx, max_mx, min_my, max_my, args):
     """
-    Compute the list of map tiles needed to cover the requested
-    area.  Returns a tuple (tiles list, west, south, east, north).
+    Compute the list of map tiles needed to cover the requested area and
+    returns the list.
     """
     west, south = mercantile.lnglat(min_mx, min_my)
     east, north = mercantile.lnglat(max_mx, max_my)
@@ -301,18 +301,34 @@ def download_and_stitch_tiles(tiles, tile_grid: Bounds, canvas_size: Size, args)
         time.sleep(0.1)
     return canvas
 
-def crop_canvas(canvas, area_bounds: Bounds, grid_bounds: Bounds, canvas_size: Size):
+def crop_canvas(canvas, area_bounds: Bounds, grid_bounds: Bounds, canvas_size: Size, zoom: int):
     """
     Crop the stitched tile canvas to the correct geographical extent
     using Bounds objects for both the requested map area and the
     projected tile grid bounds. Uses canvas Size.
     """
-    px_per_m_x = canvas_size.width / grid_bounds.width
-    px_per_m_y = canvas_size.height / grid_bounds.height
-    crop_left = int(round((area_bounds.min_x - grid_bounds.min_x) * px_per_m_x))
-    crop_right = int(round((area_bounds.max_x - grid_bounds.min_x) * px_per_m_x))
-    crop_top = int(round((grid_bounds.max_y - area_bounds.max_y) * px_per_m_y))
-    crop_bottom = int(round((grid_bounds.max_y - area_bounds.min_y) * px_per_m_y))
+    min_tx, max_tx, min_ty, max_ty = grid_bounds.min_x, grid_bounds.max_x, grid_bounds.min_y, grid_bounds.max_y
+    
+    # Get the actual Web Mercator bounding box in meters for the tile grid
+    tl_bounds = mercantile.xy_bounds(min_tx, min_ty, zoom)
+    br_bounds = mercantile.xy_bounds(max_tx, max_ty, zoom)
+
+    grid_min_x = tl_bounds.left
+    grid_max_x = br_bounds.right
+    grid_min_y = br_bounds.bottom
+    grid_max_y = tl_bounds.top
+    
+    grid_width = grid_max_x - grid_min_x
+    grid_height = grid_max_y - grid_min_y
+    
+    px_per_m_x = canvas_size.width / grid_width
+    px_per_m_y = canvas_size.height / grid_height
+    
+    crop_left = int(round((area_bounds.min_x - grid_min_x) * px_per_m_x))
+    crop_right = int(round((area_bounds.max_x - grid_min_x) * px_per_m_x))
+    crop_top = int(round((grid_max_y - area_bounds.max_y) * px_per_m_y))
+    crop_bottom = int(round((grid_max_y - area_bounds.min_y) * px_per_m_y))
+    
     return canvas.crop((crop_left, crop_top, crop_right, crop_bottom))
 
 
@@ -425,7 +441,7 @@ def main():
     # Download and stitch all needed tiles.
     canvas = download_and_stitch_tiles(tiles, grid_bounds, canvas_size, args)
     # Crop stitched canvas to exact requested Mercator area.
-    cropped_map = crop_canvas(canvas, area_bounds, grid_bounds, canvas_size)
+    cropped_map = crop_canvas(canvas, area_bounds, grid_bounds, canvas_size, args.zoom)
     # Compose label and draw annotation box if --label is given.
     add_annotation_box(cropped_map, args)
 
