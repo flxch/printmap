@@ -5,7 +5,9 @@ from dataclasses import dataclass
 import io
 import math
 import os
+from pathlib import Path
 import sys
+import tempfile
 import time
 
 import img2pdf
@@ -210,7 +212,8 @@ def determine_output(args):
     which is given by the file name's extension, e.g., '.pdf', '.jpg', ...
     """
     filename = args.output or f"map_{args.provider}_{args.format}_{args.scale}.pdf"
-    return filename, os.path.splitext(filename)[1].lower()
+    p = Path(filename)
+    return p, p.suffix.lower()
 
 
 def get_paper_size_mm(args) -> Size:
@@ -375,36 +378,33 @@ def save_output_file(image, output_file, output_format, paper_size_mm: Size, qui
     """
     Save the final map to disk as PDF, JPG, or PNG. Clean up on error.
     """
+    output_path = Path(output_file) if not isinstance(output_file, Path) else output_file
     if output_format == ".pdf":
-        temp_png = "tmp_cropped_map.png"
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_file:
+            temp_png = Path(tmp_file.name)
         try:
             image.save(temp_png, "PNG")
-        except Exception as e:
-            error(quiet, f"Failed to save temporary PNG ('{temp_png}'): {e}")
-            sys.exit(1)
-        try:
             pdf_layout = img2pdf.get_layout_fun((img2pdf.mm_to_pt(paper_size_mm.width),
                                                  img2pdf.mm_to_pt(paper_size_mm.height)))
-            with open(output_file, "wb") as f:
-                f.write(img2pdf.convert(temp_png, layout_fun=pdf_layout))
+            with open(output_path, "wb") as f:
+                f.write(img2pdf.convert(str(temp_png), layout_fun=pdf_layout))
         except Exception as e:
-            error(quiet, f"Failed to create or save PDF ('{output_file}'): {e}")
-            if os.path.exists(temp_png):
-                os.remove(temp_png)
+            error(quiet, f"Failed to create or save PDF ('{output_path}'): {e}")
             sys.exit(1)
-        if os.path.exists(temp_png):
-            os.remove(temp_png)
+        finally:
+            if temp_png.exists():
+                temp_png.unlink()
     elif output_format == ".jpg":
         try:
-            image.save(output_file, "JPEG", quality=95)
+            image.save(output_path, "JPEG", quality=95)
         except Exception as e:
-            error(quiet, f"Failed to save JPEG ('{output_file}'): {e}")
+            error(quiet, f"Failed to save JPEG ('{output_path}'): {e}")
             sys.exit(1)
     elif output_format == ".png":
         try:
-            image.save(output_file, "PNG")
+            image.save(output_path, "PNG")
         except Exception as e:
-            error(quiet, f"Failed to save PNG ('{output_file}'): {e}")
+            error(quiet, f"Failed to save PNG ('{output_path}'): {e}")
             sys.exit(1)
 
 def main():
@@ -416,7 +416,7 @@ def main():
 
     filename, fileformat = determine_output(args)
     if fileformat not in {'.pdf', '.jpg', '.jpeg', '.png'}:
-        error(args.quiet, f"Unknown file format: {output_format}")
+        error(args.quiet, f"Unknown file format: {fileformat}")
         sys.exit(1)
 
     # Get paper size (mm) and real map size (meters).
