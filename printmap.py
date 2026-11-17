@@ -330,12 +330,12 @@ def crop_canvas(canvas: Image.Image, area_bounds: Bounds, grid_bounds: Bounds, c
     return canvas.crop((crop_left, crop_top, crop_right, crop_bottom))
 
 
-def build_label(provider_info: dict[str, Any], args: argparse.Namespace) -> str:
+def build_label(args: argparse.Namespace) -> str:
     """
     Construct the annotation text for the map (label, scale, etc.).
     """
     box_text = (f"Scale 1:{args.scale}, Latitude {args.lat}, Longitude {args.lon}\n"
-                f"{provider_info['copyright']}")
+                f"{PROVIDERS[args.provider]['copyright']}")
     if args.label is not None and len(args.label) > 0:
         box_text = f"{args.label}\n" + box_text
     return box_text
@@ -344,29 +344,29 @@ def add_annotation_box(image: Image.Image, args: argparse.Namespace) -> None:
     """
     Draw annotation box with metadata and label at bottom left of the map.
     """
-    draw = ImageDraw.Draw(image)
     try:
-        font_size = max(16, int(image.width / 80))
+        font_size = 16 # max(16, int(image.width / 80))
         font = ImageFont.truetype("arial.ttf", font_size)
     except IOError:
         font = ImageFont.load_default()
-        
-    provider_info = PROVIDERS[args.provider]
-    text = build_label(provider_info, args)       
-    if text.strip():
-        bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = bbox[2] - bbox[0]
-        text_height = bbox[3] - bbox[1]
-        padding = 5
-        margin = 5
-        box_width = text_width + (padding * 2)
-        box_height = text_height + (padding * 2)
-        img_width, img_height = image.size
-        x = margin
-        y = img_height - box_height - margin
-        box_coords = [x, y, x + box_width, y + box_height]
-        draw.rectangle(box_coords, fill="white", outline="black", width=1)
-        draw.text((x + padding, y + padding), text, fill="black", font=font)
+
+    draw = ImageDraw.Draw(image)
+    text = build_label(args)
+    
+    bbox = draw.textbbox((0, 0), text, font=font)
+    text_width = bbox[2] - bbox[0]
+    text_height = bbox[3] - bbox[1]
+    padding = 5
+    margin = 5
+    box_width = text_width + (padding * 2)
+    box_height = text_height + (padding * 2)
+    img_width, img_height = image.size
+    x = margin
+    y = img_height - box_height - margin
+    box_coords = [x, y, x + box_width, y + box_height]
+    
+    draw.rectangle(box_coords, fill="white", outline="black", width=1)
+    draw.text((x + padding, y + padding), text, fill="black", font=font)
 
 
 def save_output_file(image: Image.Image, output_file: Path, output_format: str, paper_size_mm: Size) -> None:
@@ -415,7 +415,7 @@ def main() -> None:
         area_bounds, center_x, center_y = calculate_mercator_bounds(args.lon, args.lat, map_size_m)
         # Determine tiles to fetch for the requested area.
         tiles = determine_tiles(area_bounds, args.zoom)
-        info_msg(f"Provider: {args.provider}\n"
+        info_msg(f"Provider: {args.provider} ({PROVIDERS[args.provider]['site']})\n"
                  f"Center: {args.lat} (latitude), {args.lon} (longitude)\n"
                  f"Area: {map_size_m.width/1000:.2f} km x {map_size_m.height/1000:.2f} km\n"
                  f"Scale: 1:{args.scale}\n"

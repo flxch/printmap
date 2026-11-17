@@ -107,3 +107,4 @@ For additional information:
 
 1. Retry if the download of a tile fails before raising an exception.
    Maybe 2 or 3 attemps might make sense.
+2. Text box with copyright can be too big.
