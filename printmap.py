@@ -24,6 +24,10 @@ from tqdm import tqdm
 # for most cases but disable it here completely.
 Image.MAX_IMAGE_PIXELS = None
 
+# Maximum number of retries for downloading a single map tile
+MAX_TILE_DOWNLOAD_RETRIES = 5
+TILE_DOWNLOAD_RETRY_DELAY = 0.5  # seconds between retries
+
 # Paper formats (width, height) in millimeters for portrait orientation.
 DIN_FORMATS_MM = {
     "A0": (841, 1189),
@@ -101,6 +105,13 @@ def info_msg(s: str, quiet: bool = False) -> None:
     if not quiet:
         print(s, file=sys.stdout)
 
+def warning_msg(s: str, quiet: bool = False) -> None:
+    """
+    Print a warning message if quiet is true.
+    """
+    if not quiet:
+        print(s, file=sys.stderr)
+        
 def error_msg(s: str) -> None:
     """
     Print an error message (always to stderr).
@@ -274,7 +285,8 @@ def get_tile_boundaries(tiles: list[Any]) -> tuple[Bounds, Size]:
 def download_and_stitch_tiles(tiles: list[Any], tile_grid: Bounds, canvas_size: Size, args: argparse.Namespace) -> Image.Image:
     """
     Download all needed map tiles and stitch them into a single canvas.
-    Raises and exception if downloading or stiching fails.
+    Retries downloading a tile up to MAX_TILE_DOWNLOAD_RETRIES times before failing.
+    Raises an exception if downloading or stitching fails after all retries.
     """
     provider_info = PROVIDERS[args.provider]
     headers = {"User-Agent": provider_info["user_agent"]}
@@ -282,20 +294,40 @@ def download_and_stitch_tiles(tiles: list[Any], tile_grid: Bounds, canvas_size: 
     tqdm_bar = tqdm(tiles, desc="Downloading tiles", disable=args.quiet)
     for idx, t in enumerate(tqdm_bar, 1):
         url = provider_info["url"].format(z=t.z, x=t.x, y=t.y)
-        try:
-            response = requests.get(url, headers=headers, timeout=20)
-        except requests.RequestException as e:
-            raise MapGenError(f"Network error when downloading tile {t.x}/{t.y}: {e}")
-        if response.status_code == 200:
+        
+        last_exception = None
+        for attempt in range(1, MAX_TILE_DOWNLOAD_RETRIES + 1):
             try:
-                tile_img = Image.open(io.BytesIO(response.content)).convert("RGB")
-            except Exception as e:
-                raise MapGenError(f"Failed to process image for tile {t.x}/{t.y}: {e}")
-            x_pos = int(t.x - tile_grid.min_x) * 256
-            y_pos = int(t.y - tile_grid.min_y) * 256
-            canvas.paste(tile_img, (x_pos, y_pos))
+                response = requests.get(url, headers=headers, timeout=20)
+                if response.status_code == 200: # OK
+                    try:
+                        tile_img = Image.open(io.BytesIO(response.content)).convert("RGB")
+                        x_pos = int(t.x - tile_grid.min_x) * 256
+                        y_pos = int(t.y - tile_grid.min_y) * 256
+                        canvas.paste(tile_img, (x_pos, y_pos))
+                        break  # Success, so exit retry loop
+                    except Exception as e:
+                        warning_msg(f"Failed to process image for tile {t.x}/{t.y}: {e}", args.quiet)
+                        last_exception = e
+                        if attempt == MAX_TILE_DOWNLOAD_RETRIES:
+                            raise MapGenError(f"Failed to download tiles: {e}")
+                else:
+                    warning_msg(f"HTTP error at tile {t.x}/{t.y}: {response.status_code}", args.quiet)                    
+                    last_exception = f"HTTP {response.status_code}"
+                    if attempt == MAX_TILE_DOWNLOAD_RETRIES:
+                        raise MapGenError(f"Failed to download tiles: HTTP error {response.status_code}")
+            except requests.RequestException as e:
+                warning_msg(f"Network error when downloading tile {t.x}/{t.y}: {e}", args.quiet)
+                last_exception = e
+                if attempt == MAX_TILE_DOWNLOAD_RETRIES:
+                    raise MapGenError(f"Failed to download tiles: {e}")
+            # Wait some time before starting the next attempt for this tile.
+            time.sleep(TILE_DOWNLOAD_RETRY_DELAY)
         else:
-            raise MapGenError(f"HTTP error at tile {t.x}/{t.y}: HTTP {response.status_code}")
+            # This else should never be hit, since all terminal exceptions are inside the loop
+            raise MapGenError(f"Failed to download tile {t.x}/{t.y}: {last_exception}")
+        
+        # Wait some time before downloading the next tile.
         time.sleep(0.1)
     return canvas
 
