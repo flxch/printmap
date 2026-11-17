@@ -371,7 +371,8 @@ def add_annotation_box(image: Image.Image, args: argparse.Namespace) -> None:
 
 def save_output_file(image: Image.Image, output_file: Path, output_format: str, paper_size_mm: Size) -> None:
     """
-    Save the final map to disk as PDF, JPG, or PNG. Raises an expection on failure.
+    Save the final map to disk as PDF, JPG, or PNG.
+    Raises an expection in case of a failure.
     """
     output_path = Path(output_file) if not isinstance(output_file, Path) else output_file
     if output_format == ".pdf":
