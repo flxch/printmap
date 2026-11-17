@@ -106,3 +106,4 @@ For additional information:
 # Todos
 
 1. Text box with copyright can be too big.
+2. Normalize latitude and longitude values.
