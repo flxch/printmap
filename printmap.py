@@ -24,9 +24,10 @@ from tqdm import tqdm
 # for most cases but disable it here completely.
 Image.MAX_IMAGE_PIXELS = None
 
-# Maximum number of retries for downloading a single map tile
-MAX_TILE_DOWNLOAD_RETRIES = 5
-TILE_DOWNLOAD_RETRY_DELAY = 0.5  # seconds between retries
+# Maximum number of retries for downloading a single map tile.
+MAX_TILE_DOWNLOAD_RETRIES = 3
+# Pause (in seconds) between retries.
+TILE_DOWNLOAD_RETRY_DELAY = 2  
 
 # Paper formats (width, height) in millimeters for portrait orientation.
 DIN_FORMATS_MM = {
@@ -288,9 +289,10 @@ def download_and_stitch_tiles(tiles: list[Any], tile_grid: Bounds, canvas_size: 
     Retries downloading a tile up to MAX_TILE_DOWNLOAD_RETRIES times before failing.
     Raises an exception if downloading or stitching fails after all retries.
     """
+    canvas = Image.new("RGB", (int(canvas_size.width), int(canvas_size.height)))
+    
     provider_info = PROVIDERS[args.provider]
     headers = {"User-Agent": provider_info["user_agent"]}
-    canvas = Image.new("RGB", (int(canvas_size.width), int(canvas_size.height)))
     tqdm_bar = tqdm(tiles, desc="Downloading tiles", disable=args.quiet)
     for idx, t in enumerate(tqdm_bar, 1):
         url = provider_info["url"].format(z=t.z, x=t.x, y=t.y)
@@ -329,6 +331,7 @@ def download_and_stitch_tiles(tiles: list[Any], tile_grid: Bounds, canvas_size: 
         
         # Wait some time before downloading the next tile.
         time.sleep(0.1)
+        
     return canvas
 
 def crop_canvas(canvas: Image.Image, area_bounds: Bounds, grid_bounds: Bounds, canvas_size: Size, zoom: int) -> Image.Image:
