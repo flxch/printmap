@@ -234,12 +234,14 @@ def validate_args(args: argparse.Namespace) -> None:
         if args.lon != orig_lon:
             warning_msg(f"Longitude {orig_lon} out of range; normalized to {args.lon}", args.quiet)
     # Validate scale. 
-    if not (0 < args.scale <= 100_000_000):
-        raise MapGenError(f"Error: Scale {args.scale} must be > 0 and < 1,000,000")
+    if not (100 <= args.scale <= 50_000_000):
+        raise MapGenError(f"Error: Scale {args.scale} must between 100 and 50,000,000")
     # Validate zoom.     
-    if not (PROVIDERS[args.provider].zoom_min <= args.zoom <= PROVIDERS[args.prover].zoom_max):
-        raise MapGenError(f"Error: Zoom {args.zoom} must be between {zoom_min} and "
-                          f"{zoom_max} for provider '{args.provider}'")
+    if not (PROVIDERS[args.provider]['zoom_min'] <= args.zoom <= PROVIDERS[args.provider]['zoom_max']):
+        raise MapGenError(f"Error: Zoom {args.zoom} must be between "
+                          f"{PROVIDERS[args.provider]['zoom_min']} and "
+                          f"{PROVIDERS[args.provider]['zoom_min']} for"
+                          f"provider '{args.provider}'")
 
 def determine_output(args: argparse.Namespace) -> tuple[Path, str]:
     """
@@ -393,28 +395,21 @@ def crop_canvas(canvas: Image.Image, area_bounds: Bounds, grid_bounds: Bounds, c
     return canvas.crop((crop_left, crop_top, crop_right, crop_bottom))
 
 
-def build_label(args: argparse.Namespace) -> str:
-    """
-    Construct the annotation text for the map (label, scale, etc.).
-    """
-    box_text = (f"Scale 1:{args.scale}, Latitude {args.lat}, Longitude {args.lon}\n"
-                f"{PROVIDERS[args.provider]['copyright']}")
-    if args.label is not None and len(args.label) > 0:
-        box_text = f"{args.label}\n" + box_text
-    return box_text
-
 def add_annotation_box(image: Image.Image, args: argparse.Namespace) -> None:
     """
-    Draw annotation box with metadata and label at bottom left of the map.
+    Draw annotation box with metadata and label (if not the empty string) at bottom left of the map.
     """
     try:
         font_size = 16 # max(16, int(image.width / 80))
         font = ImageFont.truetype("arial.ttf", font_size)
     except IOError:
         font = ImageFont.load_default()
-
+        
+    text = (f"Scale 1:{args.scale}, Latitude {args.lat}, Longitude {args.lon}\n"
+            f"{PROVIDERS[args.provider]['copyright']}")
+    if len(args.label) > 0:
+        text = f"{args.label}\n" + text
     draw = ImageDraw.Draw(image)
-    text = build_label(args)
     
     bbox = draw.textbbox((0, 0), text, font=font)
     text_width = bbox[2] - bbox[0]
@@ -494,7 +489,8 @@ def main() -> None:
         # Crop stitched canvas to exact requested Mercator area.
         cropped_map = crop_canvas(canvas, area_bounds, grid_bounds, canvas_size, args.zoom)
         # Compose label and draw annotation box if --label is given.
-        add_annotation_box(cropped_map, args)
+        if args.label is not None:
+            add_annotation_box(cropped_map, args)
         
         # Save map as PDF/JPG/PNG.
         save_output_file(cropped_map, filepath, fileformat, paper_size_mm)
