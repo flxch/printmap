@@ -45,6 +45,8 @@ PROVIDERS = {
         "url": "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
         "user_agent": "PrivatesKartenProjekt/1.0 (kontakt@beispiel.at)",
         "is_y_inverted": False,
+        "zoom_min": 1,
+        "zoom_max": 17,
         "copyright": "Map Data: © OpenStreetMap Contributors, SRTM\n"
                      "Map Style: © OpenTopoMap (CC-BY-SA)"
     },
@@ -53,6 +55,8 @@ PROVIDERS = {
         "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         "user_agent": "PrivateSatelliteMapProject/1.0 (kontakt@beispiel.at)",
         "is_y_inverted": True,
+        "zoom_min": 1,
+        "zoom_max": 19,
         "copyright": "Map image is the intellectual property of Esri and "
                      "is used herein under license.\n© 2026 Esri and its "
                      "licensors. All rights reserved."
@@ -221,7 +225,7 @@ def validate_args(args: argparse.Namespace) -> None:
     Validate and normalize coordinate arguments if necessary; warn if normalization occurred.
     Raises an exception if a non-coordinate argument is out of bounds.
     """
-    # Normalize and warn if necessary
+    # Normalize and output warning if not normalized.
     if not (-90.0 <= args.lat <= 90.0) or not (-180.0 <= args.lon <= 180.0):
         orig_lat, orig_lon = args.lat, args.lon
         args.lat, args.lon = normalize_latitude(args.lat, args.lon)
@@ -229,13 +233,11 @@ def validate_args(args: argparse.Namespace) -> None:
             warning_msg(f"Latitude {orig_lat} out of range; normalized to {args.lat}", args.quiet)
         if args.lon != orig_lon:
             warning_msg(f"Longitude {orig_lon} out of range; normalized to {args.lon}", args.quiet)
-    # Validate scale and zoom as usual
-    if not (args.scale > 0 and args.scale < 1_000_000):
+    # Validate scale. 
+    if not (0 < args.scale <= 100_000_000):
         raise MapGenError(f"Error: Scale {args.scale} must be > 0 and < 1,000,000")
-    provider_zoom_max = {"topographic": 17, "satellite": 19}
-    zoom_min = 0
-    zoom_max = provider_zoom_max.get(args.provider, 19)
-    if not (zoom_min <= args.zoom <= zoom_max):
+    # Validate zoom.     
+    if not (PROVIDERS[args.provider].zoom_min <= args.zoom <= PROVIDERS[args.prover].zoom_max):
         raise MapGenError(f"Error: Zoom {args.zoom} must be between {zoom_min} and "
                           f"{zoom_max} for provider '{args.provider}'")
 
