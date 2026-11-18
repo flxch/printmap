@@ -195,15 +195,41 @@ def parse_args() -> argparse.Namespace:
     )
     return parser.parse_args()
 
+def normalize_longitude(lon: float) -> float:
+    """
+    Normalize longitude to [-180, 180).
+    """
+    return ((lon + 180) % 360) - 180
+
+def normalize_latitude(lat: float, lon: float) -> Tuple[float, float]:
+    """
+    Reflect latitude over the poles if out of bounds, adjusting longitude if necessary.
+    Returns a tuple (normalized_lat, normalized_lon).
+    """
+    while lat < -90 or lat > 90:
+        if lat > 90:
+            lat = 180 - lat
+            lon += 180
+        elif lat < -90:
+            lat = -180 - lat
+            lon += 180
+    lon = normalize_longitude(lon)
+    return lat, lon
+
 def validate_args(args: argparse.Namespace) -> None:
     """
-    Validate the parsed arguments for allowed value ranges.
-    Raises an exception if an argument is out of bounds.
+    Validate and normalize coordinate arguments if necessary; warn if normalization occurred.
+    Raises an exception if a non-coordinate argument is out of bounds.
     """
-    if not (-90.0 <= args.lat <= 90.0):
-        raise MapGenError(f"Error: Latitude {args.lat} out of valid range (-90 to 90)")
-    if not (-180.0 <= args.lon <= 180.0):
-        raise MapGenError(f"Error: Longitude {args.lon} out of valid range (-180 to 180)")
+    # Normalize and warn if necessary
+    if not (-90.0 <= args.lat <= 90.0) or not (-180.0 <= args.lon <= 180.0):
+        orig_lat, orig_lon = args.lat, args.lon
+        args.lat, args.lon = normalize_latitude(args.lat, args.lon)
+        if args.lat != orig_lat:
+            warning_msg(f"Latitude {orig_lat} out of range; normalized to {args.lat}", args.quiet)
+        if args.lon != orig_lon:
+            warning_msg(f"Longitude {orig_lon} out of range; normalized to {args.lon}", args.quiet)
+    # Validate scale and zoom as usual
     if not (args.scale > 0 and args.scale < 1_000_000):
         raise MapGenError(f"Error: Scale {args.scale} must be > 0 and < 1,000,000")
     provider_zoom_max = {"topographic": 17, "satellite": 19}
